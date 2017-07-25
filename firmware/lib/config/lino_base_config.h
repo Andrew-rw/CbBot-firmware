@@ -3,9 +3,9 @@
 
 #define DEBUG 1
 
-float K_P = 1.0f; // P constant
+float K_P = 1.8f; // P constant
 float K_I = 0.1f; // I constant
-float K_D = 0.0001f; // D constant
+float K_D = 0.09f; // D constant
 
 //define your motors' specs here
 

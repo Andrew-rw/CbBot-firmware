@@ -47,14 +47,13 @@ int Motor::calculate_pwm()
   pwm = (Kp * error) + (Ki * _total_pid_error) + (Kd * (error - _previous_pid_error));
   _previous_pid_error = error;
 
-
+  //pwm = (((double) pwm / (double) max_rpm) * 255);
   //make sure calculated pwm value is within PWM range
   return pwm; //constrain(pwm, -255, 255);
 }
 
 void Motor::spin(int pwm)
 {
-    pwm = (((double) pwm / (double) max_rpm) * 255);
     //this function spins the motor based on calculated PWM
     if(pwm > 0)
     {

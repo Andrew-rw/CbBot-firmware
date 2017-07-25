@@ -252,12 +252,12 @@ void do_kinematics()
 //  motor1.calculate_rpm(motor1_encoder.read());
 //  motor2.calculate_rpm(motor2_encoder.read());
 
-//  if(motor1.required_rpm == 0){
+//  if(motor1.required_rpm == 0 && motor1.current_rpm == 0){
 //    left_pwm = 0;
 //  }else{
 //    left_pwm += motor1.calculate_pwm();
 //  }
-//  if(motor1.required_rpm == 0){
+//  if(motor1.required_rpm == 0 && motor2.current_rpm == 0){
 //    right_pwm = 0;
 //  }else{
 //    right_pwm += motor2.calculate_pwm();
@@ -272,8 +272,8 @@ void move_base()
   motor1.calculate_rpm(motor1_encoder.read());
   motor2.calculate_rpm(motor2_encoder.read());
 
-  left_pwm += motor1.calculate_pwm();
-  right_pwm += motor2.calculate_pwm();
+  left_pwm = motor1.calculate_pwm();
+  right_pwm = motor2.calculate_pwm();
 
   motor1.spin(left_pwm);
   motor2.spin(right_pwm);
