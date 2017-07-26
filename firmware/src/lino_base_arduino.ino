@@ -52,8 +52,6 @@
 
 #include <Wire.h>
 
-//#include "imu_configuration.h"
-//TODO: TEMPORARY instead will be
 #include "I2Cdev.h"
 #include "MPU6050.h"
 //MPU instance
@@ -144,7 +142,7 @@ void setup()
   {
     nh.spinOnce();
   }
-  nh.loginfo("LINOBASE CONNECTED");
+  nh.loginfo("CBBASE CONNECTED");
 
   Wire.begin();
   accelgyro.initialize();
@@ -196,7 +194,7 @@ void loop()
     previous_imu_time = millis();
   }
 
-  //this block displays the encoder readings. change DEBUG to 0 if you don't want to display
+  //Change DEBUG to 0 if you don't want to display info
   if(DEBUG)
   {
     if ((millis() - previous_debug_time) >= (1000 / DEBUG_RATE))
@@ -211,8 +209,6 @@ void loop()
 
 void pid_callback( const lino_pid::linoPID& pid)
 {
-  //callback function every time PID constants are received from lino_pid for tuning
-  //this callback receives pid object where P,I, and D constants are stored
   Motor::Kp = pid.p;
   Motor::Kd = pid.d;
   Motor::Ki = pid.i;
@@ -220,8 +216,6 @@ void pid_callback( const lino_pid::linoPID& pid)
 
 void command_callback( const geometry_msgs::Twist& cmd_msg)
 {
-  //callback function every time linear and angular speed is received from 'cmd_vel' topic
-  //this callback function receives cmd_msg object where linear and angular speed are stored
   required_linear_vel = cmd_msg.linear.x;
   required_angular_vel = -cmd_msg.angular.z; //inverted to comply with hardware
 
@@ -239,33 +233,10 @@ void do_kinematics()
   //calculate the tangential velocity of the wheel if the robot's rotating where Vt = ω * radius
   double tangential_vel = angular_vel_mins * BASE_WIDTH;
 
-  //calculate and assign desired RPM for each motor
-  //left side
+  //calculate and assign desired RPM for left and right motor
   motor1.required_rpm = (linear_vel_mins / circumference) - (tangential_vel / circumference);
-  //right side
   motor2.required_rpm = (linear_vel_mins / circumference) + (tangential_vel / circumference);
 }
-
-// With fair PWM PID
-//void move_base()
-//{
-//  motor1.calculate_rpm(motor1_encoder.read());
-//  motor2.calculate_rpm(motor2_encoder.read());
-
-//  if(motor1.required_rpm == 0 && motor1.current_rpm == 0){
-//    left_pwm = 0;
-//  }else{
-//    left_pwm += motor1.calculate_pwm();
-//  }
-//  if(motor1.required_rpm == 0 && motor2.current_rpm == 0){
-//    right_pwm = 0;
-//  }else{
-//    right_pwm += motor2.calculate_pwm();
-//  }
-
-//  motor1.spin(left_pwm);
-//  motor2.spin(right_pwm);
-//}
 
 void move_base()
 {
@@ -287,8 +258,6 @@ void stop_base()
 
 void publish_linear_velocity()
 {
-  // this function publishes the linear speed of the robot
-
   //calculate the average RPM
   double average_rpm = (motor1.current_rpm + motor2.current_rpm) / 2; // RPM
   //convert revolutions per minute to revolutions per second
@@ -322,28 +291,6 @@ void check_imu()
 
   is_first = false;
 }
-
-/*
-void get_imu(){
-  if(raw_imu_msg.accelerometer && accelgyro.getIntDataReadyStatus() == 1) { // wait for data ready status register to update all data registers
-      //measure accelerometer
-      accelgyro.getMotion9(&ax, &ay, &az, &gx, &gy, &gz, &mx, &my, &mz);
-      raw_acceleration.x = ax*2.0f/32768.0f;
-      raw_acceleration.y = ay*2.0f/32768.0f;
-      raw_acceleration.z = az*2.0f/32768.0f;
-      raw_rotation.x = ((gx*250.0f/32768.0f)*M_PI/180.0f)*0.85f;//added coefficient to fix angular velocity
-      raw_rotation.y = ((gy*250.0f/32768.0f)*M_PI/180.0f)*0.85f;//
-      raw_rotation.z = ((gz*250.0f/32768.0f)*M_PI/180.0f)*0.85f;//
-      raw_magnetic_field.x = mx*10.0f*1229.0f/4096.0f + 18.0f;
-      raw_magnetic_field.y = my*10.0f*1229.0f/4096.0f + 70.0f;
-      raw_magnetic_field.z = mz*10.0f*1229.0f/4096.0f + 270.0f;
-
-      raw_imu_msg.raw_linear_acceleration = raw_acceleration;
-      raw_imu_msg.raw_angular_velocity = raw_rotation;
-      raw_imu_msg.raw_magnetic_field = raw_magnetic_field;
-  }
-}
-*/
 
 void get_imu(){
   if(raw_imu_msg.accelerometer && accelgyro.getIntDataReadyStatus() == 1) { // wait for data ready status register to update all data registers
