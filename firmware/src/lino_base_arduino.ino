@@ -217,7 +217,7 @@ void pid_callback( const lino_pid::linoPID& pid)
 void command_callback( const geometry_msgs::Twist& cmd_msg)
 {
   required_linear_vel = cmd_msg.linear.x;
-  required_angular_vel = -cmd_msg.angular.z; //inverted to comply with hardware
+  required_angular_vel = cmd_msg.angular.z;
 
   previous_command_time = millis();
 }
