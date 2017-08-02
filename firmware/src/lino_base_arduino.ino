@@ -129,6 +129,8 @@ geometry_msgs::Vector3Stamped raw_vel_msg;
 ros::Publisher raw_vel_pub("raw_vel", &raw_vel_msg);
 
 void setup(){
+  analogWriteFrequency(MOTOR1_PWM, 1000);//increase pwm frequency
+  analogWriteFrequency(MOTOR2_PWM, 1000);
   nh.initNode();
   nh.getHardware()->setBaud(57600);
   nh.subscribe(pid_sub);
