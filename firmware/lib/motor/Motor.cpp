@@ -39,7 +39,8 @@ int Motor::calculate_pwm()
   error = constrain(required_rpm, -max_rpm, max_rpm) - current_rpm;
   _total_pid_error += error;
 
-  if(required_rpm == 0 || error == 0) //experimental
+  //if(required_rpm == 0 || error == 0) //experimental
+  if(error == 0) //experimental
   {
     _total_pid_error = 0;
   }
