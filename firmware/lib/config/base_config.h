@@ -1,5 +1,5 @@
-#ifndef LINO_BASE_CONFIG_H
-#define LINO_BASE_CONFIG_H
+#ifndef BASE_CONFIG_H
+#define BASE_CONFIG_H
 
 #define DEBUG 0
 

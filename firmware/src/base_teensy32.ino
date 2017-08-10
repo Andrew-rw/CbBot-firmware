@@ -44,7 +44,7 @@
 #include "I2Cdev.h"
 #include "MPU6050.h"
 
-#include "lino_base_config.h"
+#include "base_config.h"
 #include "Encoder.h"
 #include "Motor.h"
 
@@ -64,7 +64,7 @@
 
 //TODO: refactor message header
 //header file for pid server
-#include <lino_pid/linoPID.h>
+#include <cbbot_msgs/cfgPID.h>
 
 //MPU instance
 MPU6050 accelgyro;
@@ -115,12 +115,12 @@ char buffer[50];
 
 //callback function prototypes
 void command_callback( const geometry_msgs::Twist& cmd_msg);
-void pid_callback( const lino_pid::linoPID& pid);
+void pid_callback( const cbbot_msgs::cfgPID& pid);
 
 ros::NodeHandle nh;
 
 ros::Subscriber<geometry_msgs::Twist> cmd_sub("cmd_vel", command_callback);
-ros::Subscriber<lino_pid::linoPID> pid_sub("pid", pid_callback);
+ros::Subscriber<cbbot_msgs::cfgPID> pid_sub("pid", pid_callback);
 
 ros_arduino_msgs::RawImu raw_imu_msg;
 ros::Publisher raw_imu_pub("raw_imu", &raw_imu_msg);
@@ -197,7 +197,7 @@ void loop(){
   nh.spinOnce();
 }
 
-void pid_callback( const lino_pid::linoPID& pid){
+void pid_callback( const cbbot_msgs::cfgPID& pid){
   Motor::Kp = pid.p;
   Motor::Kd = pid.d;
   Motor::Ki = pid.i;
