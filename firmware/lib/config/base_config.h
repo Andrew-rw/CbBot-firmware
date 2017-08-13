@@ -15,6 +15,14 @@ const float WHEEL_DIAMETER = 0.120; //wheel's diameter in meters
 
 #define BASE_WIDTH 0.20 // width of the plate you are using
 
+//PIEZO BEEPER PIN
+#define PIEZO 11
+
+//battery sensor pin
+#define BATT_PIN A0
+#define BATT_COEF 0.01937f
+
+
 //ENCODER PINS
 // left side encoders pins
 #define MOTOR1_ENCODER_A 2 //front_A

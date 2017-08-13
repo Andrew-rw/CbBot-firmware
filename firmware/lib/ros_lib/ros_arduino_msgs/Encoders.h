@@ -13,9 +13,12 @@ namespace ros_arduino_msgs
   class Encoders : public ros::Msg
   {
     public:
-      std_msgs::Header header;
-      int32_t left;
-      int32_t right;
+      typedef std_msgs::Header _header_type;
+      _header_type header;
+      typedef int32_t _left_type;
+      _left_type left;
+      typedef int32_t _right_type;
+      _right_type right;
 
     Encoders():
       header(),

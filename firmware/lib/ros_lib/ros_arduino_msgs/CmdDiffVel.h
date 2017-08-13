@@ -12,8 +12,10 @@ namespace ros_arduino_msgs
   class CmdDiffVel : public ros::Msg
   {
     public:
-      float left;
-      float right;
+      typedef float _left_type;
+      _left_type left;
+      typedef float _right_type;
+      _right_type right;
 
     CmdDiffVel():
       left(0),

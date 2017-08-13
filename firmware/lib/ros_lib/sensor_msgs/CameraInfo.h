@@ -14,19 +14,27 @@ namespace sensor_msgs
   class CameraInfo : public ros::Msg
   {
     public:
-      std_msgs::Header header;
-      uint32_t height;
-      uint32_t width;
-      const char* distortion_model;
-      uint8_t D_length;
-      double st_D;
-      double * D;
-      double K[9];
-      double R[9];
-      double P[12];
-      uint32_t binning_x;
-      uint32_t binning_y;
-      sensor_msgs::RegionOfInterest roi;
+      typedef std_msgs::Header _header_type;
+      _header_type header;
+      typedef uint32_t _height_type;
+      _height_type height;
+      typedef uint32_t _width_type;
+      _width_type width;
+      typedef const char* _distortion_model_type;
+      _distortion_model_type distortion_model;
+      uint32_t D_length;
+      typedef float _D_type;
+      _D_type st_D;
+      _D_type * D;
+      float K[9];
+      float R[9];
+      float P[12];
+      typedef uint32_t _binning_x_type;
+      _binning_x_type binning_x;
+      typedef uint32_t _binning_y_type;
+      _binning_y_type binning_y;
+      typedef sensor_msgs::RegionOfInterest _roi_type;
+      _roi_type roi;
 
     CameraInfo():
       header(),
@@ -58,77 +66,26 @@ namespace sensor_msgs
       *(outbuffer + offset + 3) = (this->width >> (8 * 3)) & 0xFF;
       offset += sizeof(this->width);
       uint32_t length_distortion_model = strlen(this->distortion_model);
-      memcpy(outbuffer + offset, &length_distortion_model, sizeof(uint32_t));
+      varToArr(outbuffer + offset, length_distortion_model);
       offset += 4;
       memcpy(outbuffer + offset, this->distortion_model, length_distortion_model);
       offset += length_distortion_model;
-      *(outbuffer + offset++) = D_length;
-      *(outbuffer + offset++) = 0;
-      *(outbuffer + offset++) = 0;
-      *(outbuffer + offset++) = 0;
-      for( uint8_t i = 0; i < D_length; i++){
-      union {
-        double real;
-        uint64_t base;
-      } u_Di;
-      u_Di.real = this->D[i];
-      *(outbuffer + offset + 0) = (u_Di.base >> (8 * 0)) & 0xFF;
-      *(outbuffer + offset + 1) = (u_Di.base >> (8 * 1)) & 0xFF;
-      *(outbuffer + offset + 2) = (u_Di.base >> (8 * 2)) & 0xFF;
-      *(outbuffer + offset + 3) = (u_Di.base >> (8 * 3)) & 0xFF;
-      *(outbuffer + offset + 4) = (u_Di.base >> (8 * 4)) & 0xFF;
-      *(outbuffer + offset + 5) = (u_Di.base >> (8 * 5)) & 0xFF;
-      *(outbuffer + offset + 6) = (u_Di.base >> (8 * 6)) & 0xFF;
-      *(outbuffer + offset + 7) = (u_Di.base >> (8 * 7)) & 0xFF;
-      offset += sizeof(this->D[i]);
+      *(outbuffer + offset + 0) = (this->D_length >> (8 * 0)) & 0xFF;
+      *(outbuffer + offset + 1) = (this->D_length >> (8 * 1)) & 0xFF;
+      *(outbuffer + offset + 2) = (this->D_length >> (8 * 2)) & 0xFF;
+      *(outbuffer + offset + 3) = (this->D_length >> (8 * 3)) & 0xFF;
+      offset += sizeof(this->D_length);
+      for( uint32_t i = 0; i < D_length; i++){
+      offset += serializeAvrFloat64(outbuffer + offset, this->D[i]);
       }
-      for( uint8_t i = 0; i < 9; i++){
-      union {
-        double real;
-        uint64_t base;
-      } u_Ki;
-      u_Ki.real = this->K[i];
-      *(outbuffer + offset + 0) = (u_Ki.base >> (8 * 0)) & 0xFF;
-      *(outbuffer + offset + 1) = (u_Ki.base >> (8 * 1)) & 0xFF;
-      *(outbuffer + offset + 2) = (u_Ki.base >> (8 * 2)) & 0xFF;
-      *(outbuffer + offset + 3) = (u_Ki.base >> (8 * 3)) & 0xFF;
-      *(outbuffer + offset + 4) = (u_Ki.base >> (8 * 4)) & 0xFF;
-      *(outbuffer + offset + 5) = (u_Ki.base >> (8 * 5)) & 0xFF;
-      *(outbuffer + offset + 6) = (u_Ki.base >> (8 * 6)) & 0xFF;
-      *(outbuffer + offset + 7) = (u_Ki.base >> (8 * 7)) & 0xFF;
-      offset += sizeof(this->K[i]);
+      for( uint32_t i = 0; i < 9; i++){
+      offset += serializeAvrFloat64(outbuffer + offset, this->K[i]);
       }
-      for( uint8_t i = 0; i < 9; i++){
-      union {
-        double real;
-        uint64_t base;
-      } u_Ri;
-      u_Ri.real = this->R[i];
-      *(outbuffer + offset + 0) = (u_Ri.base >> (8 * 0)) & 0xFF;
-      *(outbuffer + offset + 1) = (u_Ri.base >> (8 * 1)) & 0xFF;
-      *(outbuffer + offset + 2) = (u_Ri.base >> (8 * 2)) & 0xFF;
-      *(outbuffer + offset + 3) = (u_Ri.base >> (8 * 3)) & 0xFF;
-      *(outbuffer + offset + 4) = (u_Ri.base >> (8 * 4)) & 0xFF;
-      *(outbuffer + offset + 5) = (u_Ri.base >> (8 * 5)) & 0xFF;
-      *(outbuffer + offset + 6) = (u_Ri.base >> (8 * 6)) & 0xFF;
-      *(outbuffer + offset + 7) = (u_Ri.base >> (8 * 7)) & 0xFF;
-      offset += sizeof(this->R[i]);
+      for( uint32_t i = 0; i < 9; i++){
+      offset += serializeAvrFloat64(outbuffer + offset, this->R[i]);
       }
-      for( uint8_t i = 0; i < 12; i++){
-      union {
-        double real;
-        uint64_t base;
-      } u_Pi;
-      u_Pi.real = this->P[i];
-      *(outbuffer + offset + 0) = (u_Pi.base >> (8 * 0)) & 0xFF;
-      *(outbuffer + offset + 1) = (u_Pi.base >> (8 * 1)) & 0xFF;
-      *(outbuffer + offset + 2) = (u_Pi.base >> (8 * 2)) & 0xFF;
-      *(outbuffer + offset + 3) = (u_Pi.base >> (8 * 3)) & 0xFF;
-      *(outbuffer + offset + 4) = (u_Pi.base >> (8 * 4)) & 0xFF;
-      *(outbuffer + offset + 5) = (u_Pi.base >> (8 * 5)) & 0xFF;
-      *(outbuffer + offset + 6) = (u_Pi.base >> (8 * 6)) & 0xFF;
-      *(outbuffer + offset + 7) = (u_Pi.base >> (8 * 7)) & 0xFF;
-      offset += sizeof(this->P[i]);
+      for( uint32_t i = 0; i < 12; i++){
+      offset += serializeAvrFloat64(outbuffer + offset, this->P[i]);
       }
       *(outbuffer + offset + 0) = (this->binning_x >> (8 * 0)) & 0xFF;
       *(outbuffer + offset + 1) = (this->binning_x >> (8 * 1)) & 0xFF;
@@ -159,7 +116,7 @@ namespace sensor_msgs
       this->width |= ((uint32_t) (*(inbuffer + offset + 3))) << (8 * 3);
       offset += sizeof(this->width);
       uint32_t length_distortion_model;
-      memcpy(&length_distortion_model, (inbuffer + offset), sizeof(uint32_t));
+      arrToVar(length_distortion_model, (inbuffer + offset));
       offset += 4;
       for(unsigned int k= offset; k< offset+length_distortion_model; ++k){
           inbuffer[k-1]=inbuffer[k];
@@ -167,79 +124,26 @@ namespace sensor_msgs
       inbuffer[offset+length_distortion_model-1]=0;
       this->distortion_model = (char *)(inbuffer + offset-1);
       offset += length_distortion_model;
-      uint8_t D_lengthT = *(inbuffer + offset++);
+      uint32_t D_lengthT = ((uint32_t) (*(inbuffer + offset))); 
+      D_lengthT |= ((uint32_t) (*(inbuffer + offset + 1))) << (8 * 1); 
+      D_lengthT |= ((uint32_t) (*(inbuffer + offset + 2))) << (8 * 2); 
+      D_lengthT |= ((uint32_t) (*(inbuffer + offset + 3))) << (8 * 3); 
+      offset += sizeof(this->D_length);
       if(D_lengthT > D_length)
-        this->D = (double*)realloc(this->D, D_lengthT * sizeof(double));
-      offset += 3;
+        this->D = (float*)realloc(this->D, D_lengthT * sizeof(float));
       D_length = D_lengthT;
-      for( uint8_t i = 0; i < D_length; i++){
-      union {
-        double real;
-        uint64_t base;
-      } u_st_D;
-      u_st_D.base = 0;
-      u_st_D.base |= ((uint64_t) (*(inbuffer + offset + 0))) << (8 * 0);
-      u_st_D.base |= ((uint64_t) (*(inbuffer + offset + 1))) << (8 * 1);
-      u_st_D.base |= ((uint64_t) (*(inbuffer + offset + 2))) << (8 * 2);
-      u_st_D.base |= ((uint64_t) (*(inbuffer + offset + 3))) << (8 * 3);
-      u_st_D.base |= ((uint64_t) (*(inbuffer + offset + 4))) << (8 * 4);
-      u_st_D.base |= ((uint64_t) (*(inbuffer + offset + 5))) << (8 * 5);
-      u_st_D.base |= ((uint64_t) (*(inbuffer + offset + 6))) << (8 * 6);
-      u_st_D.base |= ((uint64_t) (*(inbuffer + offset + 7))) << (8 * 7);
-      this->st_D = u_st_D.real;
-      offset += sizeof(this->st_D);
-        memcpy( &(this->D[i]), &(this->st_D), sizeof(double));
+      for( uint32_t i = 0; i < D_length; i++){
+      offset += deserializeAvrFloat64(inbuffer + offset, &(this->st_D));
+        memcpy( &(this->D[i]), &(this->st_D), sizeof(float));
       }
-      for( uint8_t i = 0; i < 9; i++){
-      union {
-        double real;
-        uint64_t base;
-      } u_Ki;
-      u_Ki.base = 0;
-      u_Ki.base |= ((uint64_t) (*(inbuffer + offset + 0))) << (8 * 0);
-      u_Ki.base |= ((uint64_t) (*(inbuffer + offset + 1))) << (8 * 1);
-      u_Ki.base |= ((uint64_t) (*(inbuffer + offset + 2))) << (8 * 2);
-      u_Ki.base |= ((uint64_t) (*(inbuffer + offset + 3))) << (8 * 3);
-      u_Ki.base |= ((uint64_t) (*(inbuffer + offset + 4))) << (8 * 4);
-      u_Ki.base |= ((uint64_t) (*(inbuffer + offset + 5))) << (8 * 5);
-      u_Ki.base |= ((uint64_t) (*(inbuffer + offset + 6))) << (8 * 6);
-      u_Ki.base |= ((uint64_t) (*(inbuffer + offset + 7))) << (8 * 7);
-      this->K[i] = u_Ki.real;
-      offset += sizeof(this->K[i]);
+      for( uint32_t i = 0; i < 9; i++){
+      offset += deserializeAvrFloat64(inbuffer + offset, &(this->K[i]));
       }
-      for( uint8_t i = 0; i < 9; i++){
-      union {
-        double real;
-        uint64_t base;
-      } u_Ri;
-      u_Ri.base = 0;
-      u_Ri.base |= ((uint64_t) (*(inbuffer + offset + 0))) << (8 * 0);
-      u_Ri.base |= ((uint64_t) (*(inbuffer + offset + 1))) << (8 * 1);
-      u_Ri.base |= ((uint64_t) (*(inbuffer + offset + 2))) << (8 * 2);
-      u_Ri.base |= ((uint64_t) (*(inbuffer + offset + 3))) << (8 * 3);
-      u_Ri.base |= ((uint64_t) (*(inbuffer + offset + 4))) << (8 * 4);
-      u_Ri.base |= ((uint64_t) (*(inbuffer + offset + 5))) << (8 * 5);
-      u_Ri.base |= ((uint64_t) (*(inbuffer + offset + 6))) << (8 * 6);
-      u_Ri.base |= ((uint64_t) (*(inbuffer + offset + 7))) << (8 * 7);
-      this->R[i] = u_Ri.real;
-      offset += sizeof(this->R[i]);
+      for( uint32_t i = 0; i < 9; i++){
+      offset += deserializeAvrFloat64(inbuffer + offset, &(this->R[i]));
       }
-      for( uint8_t i = 0; i < 12; i++){
-      union {
-        double real;
-        uint64_t base;
-      } u_Pi;
-      u_Pi.base = 0;
-      u_Pi.base |= ((uint64_t) (*(inbuffer + offset + 0))) << (8 * 0);
-      u_Pi.base |= ((uint64_t) (*(inbuffer + offset + 1))) << (8 * 1);
-      u_Pi.base |= ((uint64_t) (*(inbuffer + offset + 2))) << (8 * 2);
-      u_Pi.base |= ((uint64_t) (*(inbuffer + offset + 3))) << (8 * 3);
-      u_Pi.base |= ((uint64_t) (*(inbuffer + offset + 4))) << (8 * 4);
-      u_Pi.base |= ((uint64_t) (*(inbuffer + offset + 5))) << (8 * 5);
-      u_Pi.base |= ((uint64_t) (*(inbuffer + offset + 6))) << (8 * 6);
-      u_Pi.base |= ((uint64_t) (*(inbuffer + offset + 7))) << (8 * 7);
-      this->P[i] = u_Pi.real;
-      offset += sizeof(this->P[i]);
+      for( uint32_t i = 0; i < 12; i++){
+      offset += deserializeAvrFloat64(inbuffer + offset, &(this->P[i]));
       }
       this->binning_x =  ((uint32_t) (*(inbuffer + offset)));
       this->binning_x |= ((uint32_t) (*(inbuffer + offset + 1))) << (8 * 1);

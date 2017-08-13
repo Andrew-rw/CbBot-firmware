@@ -38,7 +38,9 @@
 #define IMU_PUBLISH_RATE 10 //hz
 #define VEL_PUBLISH_RATE 10 //hz
 #define COMMAND_RATE 100 //hz
+#define BATTERY_PUBLISH_RATE 1 //hz
 #define DEBUG_RATE 2
+#define BEEP_DURATION 200 //ms
 
 #include <Wire.h>
 #include "I2Cdev.h"
@@ -62,9 +64,9 @@
 
 #include <ros/time.h>
 
-//TODO: refactor message header
-//header file for pid server
 #include <cbbot_msgs/cfgPID.h>
+#include <cbbot_msgs/CBService.h>
+#include <sensor_msgs/BatteryState.h>
 
 //MPU instance
 MPU6050 accelgyro;
@@ -79,6 +81,10 @@ int16_t mx, my, mz;
 
 bool is_first = true;
 boolean imu_enabled = false;
+
+//battery variables
+double voltage = 0;
+long batt_measure_counter = 0;
 
 //left side motors
 Motor motor1(MOTOR1_PWM, MOTOR1_IN_A, MOTOR1_IN_B); //front
@@ -110,17 +116,20 @@ unsigned long previous_control_time = 0;
 unsigned long publish_vel_time = 0;
 unsigned long previous_imu_time = 0;
 unsigned long previous_debug_time = 0;
-
+unsigned long beep_start_time = 0;
+unsigned long previous_batt_time = 0;
 char buffer[50];
 
 //callback function prototypes
 void command_callback( const geometry_msgs::Twist& cmd_msg);
 void pid_callback( const cbbot_msgs::cfgPID& pid);
+void srv_cmd_callback( const cbbot_msgs::CBService& srv_cmd);
 
 ros::NodeHandle nh;
-
+//TODO: make topics configurable
 ros::Subscriber<geometry_msgs::Twist> cmd_sub("cmd_vel", command_callback);
 ros::Subscriber<cbbot_msgs::cfgPID> pid_sub("pid", pid_callback);
+ros::Subscriber<cbbot_msgs::CBService> srv_cmd_sub("srv_cmd", srv_cmd_callback);
 
 ros_arduino_msgs::RawImu raw_imu_msg;
 ros::Publisher raw_imu_pub("raw_imu", &raw_imu_msg);
@@ -128,20 +137,29 @@ ros::Publisher raw_imu_pub("raw_imu", &raw_imu_msg);
 geometry_msgs::Vector3Stamped raw_vel_msg;
 ros::Publisher raw_vel_pub("raw_vel", &raw_vel_msg);
 
+sensor_msgs::BatteryState battery_state_msg;
+ros::Publisher batt_pub("battery_state", &battery_state_msg);
+
 void setup(){
   analogWriteFrequency(MOTOR1_PWM, 1000);//increase pwm frequency
   analogWriteFrequency(MOTOR2_PWM, 1000);
+  pinMode(PIEZO, OUTPUT);
+  beep_off();//quiet
   nh.initNode();
   nh.getHardware()->setBaud(57600);
   nh.subscribe(pid_sub);
   nh.subscribe(cmd_sub);
+  nh.subscribe(srv_cmd_sub);
   nh.advertise(raw_vel_pub);
   nh.advertise(raw_imu_pub);
+  nh.advertise(batt_pub);
 
   while (!nh.connected()){
     nh.spinOnce();
   }
   nh.loginfo("CBBASE CONNECTED");
+
+  init_battery_msg();
 
   Wire.begin();
   accelgyro.initialize();
@@ -172,6 +190,14 @@ void loop(){
     publish_vel_time = millis();
   }
 
+  //check battery state
+  if ((millis() - previous_batt_time) >= (1000 / BATTERY_PUBLISH_RATE)){
+    publish_battery_v();
+    previous_batt_time = millis();
+  } else if ((millis() - previous_batt_time) >= 100){
+    check_battery_v();
+  }
+
   if (is_first){
     check_imu();
   }else if(imu_enabled){
@@ -183,6 +209,10 @@ void loop(){
   if ((millis() - previous_imu_time) >= (1000 / IMU_PUBLISH_RATE)){
     publish_imu();
     previous_imu_time = millis();
+  }
+
+  if(beep_start_time != 0 && ((millis() - beep_start_time)>=BEEP_DURATION)){
+    beep_off();
   }
 
   //Change DEBUG to 0 if you don't want to display info
@@ -208,6 +238,19 @@ void command_callback( const geometry_msgs::Twist& cmd_msg){
   required_angular_vel = cmd_msg.angular.z;
 
   previous_command_time = millis();
+}
+
+void srv_cmd_callback( const cbbot_msgs::CBService& srv_cmd){
+  uint8_t cmd = srv_cmd.cmd;
+  switch (cmd) {
+  case 21:
+    beep_on();
+    break;
+  default:
+    sprintf(buffer, "Unknown command: %d", cmd);
+    nh.logwarn(buffer);
+    break;
+  }
 }
 
 void do_kinematics(){
@@ -306,6 +349,46 @@ void publish_imu(){
     raw_imu_msg.header.frame_id = "imu_link";
     raw_imu_pub.publish(&raw_imu_msg);
   }
+}
+
+//piezo beep sound
+void beep_on(){
+  beep_start_time = millis();
+  digitalWrite(PIEZO, HIGH);
+}
+
+void beep_off(){
+  digitalWrite(PIEZO, LOW);
+  beep_start_time = 0;
+}
+
+//battery state
+void init_battery_msg(){
+  // Initialize Battery States
+  battery_state_msg.current         = NAN;
+  battery_state_msg.charge          = NAN;
+  battery_state_msg.capacity        = 5800; //mAh
+  battery_state_msg.design_capacity = 6000; //mAh
+  battery_state_msg.percentage = NAN;
+  battery_state_msg.power_supply_status = 2; //discharging
+  battery_state_msg.power_supply_health = 0; //unknown
+  battery_state_msg.power_supply_technology = 3; //LiPo
+  battery_state_msg.present = 1;
+}
+
+void check_battery_v(){
+  voltage += analogRead(BATT_PIN) * BATT_COEF;
+  batt_measure_counter++;
+}
+
+void publish_battery_v(){
+  float v = (float)voltage/(float)batt_measure_counter;
+  battery_state_msg.voltage = v;
+  battery_state_msg.header.stamp = nh.now();
+  voltage = 0;
+  batt_measure_counter = 0;
+  //publish battery_state_msg object to ROS
+  batt_pub.publish(&battery_state_msg);
 }
 
 // prints RPM and encoder debug info

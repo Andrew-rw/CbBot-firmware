@@ -14,13 +14,20 @@ namespace ros_arduino_msgs
   class RawImu : public ros::Msg
   {
     public:
-      std_msgs::Header header;
-      bool accelerometer;
-      bool gyroscope;
-      bool magnetometer;
-      geometry_msgs::Vector3 raw_linear_acceleration;
-      geometry_msgs::Vector3 raw_angular_velocity;
-      geometry_msgs::Vector3 raw_magnetic_field;
+      typedef std_msgs::Header _header_type;
+      _header_type header;
+      typedef bool _accelerometer_type;
+      _accelerometer_type accelerometer;
+      typedef bool _gyroscope_type;
+      _gyroscope_type gyroscope;
+      typedef bool _magnetometer_type;
+      _magnetometer_type magnetometer;
+      typedef geometry_msgs::Vector3 _raw_linear_acceleration_type;
+      _raw_linear_acceleration_type raw_linear_acceleration;
+      typedef geometry_msgs::Vector3 _raw_angular_velocity_type;
+      _raw_angular_velocity_type raw_angular_velocity;
+      typedef geometry_msgs::Vector3 _raw_magnetic_field_type;
+      _raw_magnetic_field_type raw_magnetic_field;
 
     RawImu():
       header(),
