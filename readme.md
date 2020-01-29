@@ -1,5 +1,7 @@
 ## Firmware for CbBot 4.0 Base Controller
 
+**Deprecated. Not maintained anymore**
+
 Based on Linorobot firmware
 
 **Responsible for:**
